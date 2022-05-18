@@ -1,0 +1,379 @@
+<TrustFrameworkPolicy
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
+  PolicySchemaVersion="0.3.0.0"
+  TenantId="pattanb2c.onmicrosoft.com"
+  PolicyId="B2C_1A_HelloWorld"
+  PublicPolicyUri="http://pattanb2c.onmicrosoft.com/B2C_1A_HelloWorld">
+
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="objectId">
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="message">
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="signInName">
+        <DisplayName>Sign in name</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText/>
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+
+      <ClaimType Id="email">
+        <DisplayName>Email Address</DisplayName>
+        <DataType>string</DataType>
+        <DefaultPartnerClaimTypes>
+          <Protocol Name="OpenIdConnect" PartnerClaimType="email" />
+        </DefaultPartnerClaimTypes>
+        <UserHelpText>Email address that can be used to contact you.</UserHelpText>
+        <UserInputType>TextBox</UserInputType>
+        <Restriction>
+          <Pattern
+            RegularExpression="^[a-zA-Z0-9.!#$%&amp;'^_`{}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"
+            HelpText="Please enter a valid email address."/>
+        </Restriction>
+      </ClaimType>
+
+      <ClaimType Id="password">
+        <DisplayName>Password</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Enter password</UserHelpText>
+        <UserInputType>Password</UserInputType>
+      </ClaimType>
+
+      <!-- Value to be set to ProxyIdentityExperienceFramework Application (client) ID -->
+      <ClaimType Id="client_id">
+        <DisplayName>client_id</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Special parameter passed to EvoSTS.</AdminHelpText>
+        <UserHelpText>Special parameter passed to EvoSTS.</UserHelpText>
+      </ClaimType>
+
+      <!-- Value to be set to IdentityExperienceFramework Application (client) ID -->
+      <ClaimType Id="resource_id">
+        <DisplayName>resource_id</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Special parameter passed to EvoSTS.</AdminHelpText>
+        <UserHelpText>Special parameter passed to EvoSTS.</UserHelpText>
+      </ClaimType>
+
+      <!-- SECTION II: Claims required to pass on special parameters (including some query string parameters) to other claims providers -->
+      <ClaimType Id="nca">
+        <DisplayName>nca</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Special parameter passed for local account authentication to login.microsoftonline.com.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="grant_type">
+        <DisplayName>grant_type</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Special parameter passed for local account authentication to login.microsoftonline.com.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="scope">
+        <DisplayName>scope</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Special parameter passed for local account authentication to login.microsoftonline.com.</UserHelpText>
+      </ClaimType>
+
+      <ClaimType Id="successMessage">
+        <DataType>string</DataType>
+        <UserHelpText>Add help text here</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+     
+    </ClaimsSchema>
+
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateSuccessMessage" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="Login Successful." />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="successMessage" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+
+    <ContentDefinitions>
+      <ContentDefinition Id="SelfAssertedContentDefinition">
+          <LoadUri>~/tenant/default/selfAsserted.cshtml</LoadUri>
+          <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+          <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+      </ContentDefinition>    
+      <ContentDefinition Id="SignupOrSigninContentDefinition">
+        <LoadUri>~/tenant/default/unified.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Signin and Signup</Item>
+        </Metadata>
+      </ContentDefinition>  
+    </ContentDefinitions>
+
+  </BuildingBlocks>
+
+
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Trustframework Policy Engine TechnicalProfiles</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="TpEngine_c3bd4fe2-1775-4013-b91d-35f16d377d13">
+          <DisplayName>Trustframework Policy Engine Default Technical Profile</DisplayName>
+          <Protocol Name="None" />
+          <Metadata>
+            <Item Key="url">{service:te}</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+     </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Token Issuer Technical Profiles</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="JwtIssuer">
+          <DisplayName>JWT Issuer</DisplayName>
+          <Protocol Name="None" />
+          <OutputTokenFormat>JWT</OutputTokenFormat>
+          <Metadata>
+            <Item Key="client_id">{service:te}</Item>
+            <Item Key="issuer_refresh_token_user_identity_claim_type">objectId</Item>
+            <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+            <Key Id="issuer_refresh_token_key" StorageReferenceId="B2C_1A_TokenEncryptionKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims />
+          <OutputClaims />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Claim Generator Technical Profiles</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="RandomObjectIdClaimGenerator">
+          <DisplayName>Random Object ID Claim Generator Technical Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId"/>
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="GenerateObjectIdTransformation"/>
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <ClaimsProvider>
+      <DisplayName>Sample User Input Collection Technical Profiles</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="UserInputMessageClaimGenerator">
+          <!--
+          Generates the content of the message claim by applying the relevant claims transformation
+          -->
+          <DisplayName>Display Name Claim Generator Technical Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="displayName"/>
+            <OutputClaim ClaimTypeReferenceId="message"/>
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreateDisplayNameTransformation"/>
+            <OutputClaimsTransformation ReferenceId="CreateMessageTransformation"/>
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+        <TechnicalProfile Id="UserInformationCollector">
+          <DisplayName>Collect Sample User Input Technical Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata><Item Key="ContentDefinitionReferenceId">SelfAssertedContentDefinition</Item></Metadata>
+          <DisplayClaims>
+            <DisplayClaim ClaimTypeReferenceId="givenName" Required="true"/>
+            <DisplayClaim ClaimTypeReferenceId="surname"  Required="true"/>
+          </DisplayClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="givenName"/>
+            <OutputClaim ClaimTypeReferenceId="surname"/>
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+    <!-- HTTP Request Technical Profiles -->
+    <ClaimsProvider>
+        <DisplayName>HTTP Request Technical Profiles</DisplayName>
+        <TechnicalProfiles>
+            <TechnicalProfile Id="REST-Greeting">
+                <DisplayName>Get personalized greeting by making a REST call</DisplayName>
+                <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, 
+                                Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                <Metadata>
+                    <Item Key="ServiceUrl">https://qafunctionapp.azurewebsites.net/api/Greeting?code=vy8LVbecUdCVMoLHfQ5TzSFEvcbQBVFKGY2XMg2WfQqYJwrcA9fGkQ==</Item>
+                    <Item Key="AuthenticationType">None</Item>
+                    <Item Key="SendClaimsIn">QueryString</Item>
+                    <Item Key="DebugMode">false</Item>
+                </Metadata>
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="FirstName"/>
+                    <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="LastName"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="message" PartnerClaimType="Greeting" />
+                </OutputClaims>
+            </TechnicalProfile>
+        </TechnicalProfiles>
+    </ClaimsProvider>
+ <ClaimsProvider>
+      <DisplayName>Local Account SignIn</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="LoginUser">
+          <DisplayName>Local Account SignIn</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <Metadata>
+            <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">We can't seem to find your account</Item>
+            <Item Key="UserMessageIfInvalidPassword">Your password is incorrect</Item>
+            <Item Key="UserMessageIfOldPasswordUsed">Looks like you used an old password</Item>
+            <Item Key="ProviderName">https://sts.windows.net/</Item>
+            <Item Key="METADATA">https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration</Item>
+            <Item Key="authorization_endpoint">https://login.microsoftonline.com/{tenant}/oauth2/token</Item>
+            <Item Key="response_types">id_token</Item>
+            <Item Key="response_mode">query</Item>
+            <Item Key="scope">email openid</Item>
+            <!-- Policy Engine Clients -->
+            <Item Key="UsePolicyInRedirectUri">false</Item>
+            <Item Key="HttpBinding">POST</Item>
+            <Item Key="client_id">92a6ff2f-2c0d-4f6f-adba-a37583a088bf</Item>
+            <Item Key="IdTokenAudience">c86bcad5-4810-419f-ad32-6ade9700f2c4</Item>
+          </Metadata>
+          <InputClaims>
+              <!-- <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="username" Required="true" /> -->
+            <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="username" Required="true" />
+              <InputClaim ClaimTypeReferenceId="password" PartnerClaimType="password" Required="true" />
+              <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="password" />
+              <InputClaim ClaimTypeReferenceId="scope" DefaultValue="openid" />
+              <InputClaim ClaimTypeReferenceId="nca" PartnerClaimType="nca" DefaultValue="1" />
+              <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="92a6ff2f-2c0d-4f6f-adba-a37583a088bf" />
+              <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource"  DefaultValue="c86bcad5-4810-419f-ad32-6ade9700f2c4" />
+            </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SignInUser">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="SignUpTarget">SignInUserClaimsExchange</Item>
+            <!-- <Item Key="setting.operatingMode">Email</Item> -->
+						<Item Key="setting.operatingMode">Username</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+            <!-- <OutputClaim ClaimTypeReferenceId="email" Required="true" /> -->
+            <OutputClaim ClaimTypeReferenceId="password" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="LoginUser" />
+          </ValidationTechnicalProfiles>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>    
+    <ClaimsProvider>
+      <DisplayName>Self Asserted</DisplayName>
+      <TechnicalProfiles>
+        <!-- Demo: Show success page-->
+        <TechnicalProfile Id="SelfAsserted-Success">
+          <DisplayName>Unsolicited error message</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">SelfAssertedContentDefinition</Item>
+            <Item Key="setting.showCancelButton">false</Item>
+          </Metadata>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="CreateSuccessMessage" />
+          </InputClaimsTransformations>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="successMessage"/>
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="successMessage"/>
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>    
+  </ClaimsProviders>
+
+  <UserJourneys>
+    <UserJourney Id="HelloNameGreetingJourney">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetObjectIdClaimsExchange" TechnicalProfileReferenceId="RandomObjectIdClaimGenerator" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetUserInformationClaimsExchange" TechnicalProfileReferenceId="UserInformationCollector"/>
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GetMessageClaimsExchange" TechnicalProfileReferenceId="REST-Greeting"/>
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>    
+    </UserJourney>
+    <UserJourney Id="SignInJourney">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp"
+                        ContentDefinitionReferenceId="SignupOrSigninContentDefinition">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection ValidationClaimsExchangeId="SignInUserClaimsExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SignInUserClaimsExchange" TechnicalProfileReferenceId="SignInUser"/>
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Success" TechnicalProfileReferenceId="SelfAsserted-Success" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order= "3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+
+  </UserJourneys>
+
+  <!--RelyingParty>
+    <DefaultUserJourney ReferenceId="HelloNameGreetingJourney"/>
+    <TechnicalProfile Id="HelloWorldPolicyProfile">
+      <DisplayName>Hello World Policy Profile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub" DefaultValue="Hello World Object ID"/>
+        <OutputClaim ClaimTypeReferenceId="message" DefaultValue="Hello World!"/>
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="sub" />
+    </TechnicalProfile>
+  </RelyingParty-->
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignInJourney"/>
+    <TechnicalProfile Id="SignInPolicyProfile">
+      <DisplayName>SignIn Policy Profile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <!-- <OutputClaim ClaimTypeReferenceId="email" /> -->
+        <OutputClaim ClaimTypeReferenceId="signInName" />
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="sub" />
+    </TechnicalProfile>
+  </RelyingParty> 
+</TrustFrameworkPolicy>
